@@ -13,7 +13,7 @@ def git_push():
         subprocess.run(['git', 'push'], check=True)
     except subprocess.CalledProcessError:
         # If push fails because the upstream branch is not set, set it and try again
-        subprocess.run(['git', 'push', '--set-upstream', 'trad-ai', 'main'])
+        subprocess.run(['git', 'push', '--set-upstream', 'Auto-Trade', 'main'])
         subprocess.run(['git', 'push'])
 
 if __name__ == "__main__":
