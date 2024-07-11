@@ -1,0 +1,8 @@
+# requirements.txt
+fastapi
+uvicorn
+torch
+transformers
+influxdb-client
+pandas
+numpy
