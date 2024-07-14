@@ -1,6 +1,8 @@
 import json
 import websocket
 from kafka import KafkaProducer
+from dotenv import load_dotenv
+from os import getenv
 
 def on_message(ws, message):
     #parse the message
@@ -29,8 +31,9 @@ def on_open(ws):
     ws.send(json.dumps(subscribe_message))
 
 if __name__ == "__main__":
-    producer = KafkaProducer(bootstrap_servers='localhost:9092', value_serializer=lambda v: json.dumps(v).encode('utf-8'))
-    ws = websocket.WebSocketApp("wss://stream.binance.com:9443/ws",
+    load_dotenv()
+    producer = KafkaProducer(bootstrap_servers=getenv("KAFKA_BOOSTRAP_SERVERS"), value_serializer=lambda v: json.dumps(v).encode('utf-8'))
+    ws = websocket.WebSocketApp(getenv("BINANCE_WEBSOCKET_URL"),
                                 on_message=on_message,
                                 on_error=on_error,
                                 on_close=on_close,

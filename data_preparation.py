@@ -2,9 +2,16 @@
 from influxdb_client import InfluxDBClient
 import pandas as pd
 import numpy as np
+from dotenv import load_dotenv
+from os import getenv
 
 def fetch_data_from_influx(bucket, measurement, start_time, end_time):
-    client = InfluxDBClient(url="http://localhost:8086", token="your_token", org="your_org")
+    load_dotenv()
+    client = InfluxDBClient(url=getenv("INFLUXDB_URL"),
+        username=getenv("INFLUXDB_USERNAME"),
+        password=getenv("INFLUXDB_PASSWORD"),
+        ssl=True, verify_ssl=True,
+        org=getenv("INFLUXDB_ORG"))
     query_api = client.query_api()
     
     query = f'''

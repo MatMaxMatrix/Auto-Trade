@@ -4,17 +4,24 @@ from influxdb_client import InfluxDBClient, Point
 from influxdb_client.client.write_api import SYNCHRONOUS
 from collections import deque
 import subprocess
+from dotenv import load_dotenv
+from os import getenv
+
+load_dotenv()
 
 data_queue = deque(maxlen=20)
 
-
 # InfluxDB setup
-influx_client = InfluxDBClient(url="http://localhost:8086", username="myuser",password="mypassword",ssl=True, verify_ssl=True, org="myorg")
+influx_client = InfluxDBClient(url=getenv("INFLUXDB_URL"),
+    username=getenv("INFLUXDB_USERNAME"),
+    password=getenv("INFLUXDB_PASSWORD"),
+    ssl=True, verify_ssl=True,
+    org=getenv("INFLUXDB_ORG"))
 write_api = influx_client.write_api(write_options=SYNCHRONOUS)
 
 # Kafka Consumer setup
 consumer_conf = {
-    'bootstrap.servers': 'localhost:9092',
+    'bootstrap.servers': getenv("KAFKA_BOOSTRAP_SERVERS"),
     'group.id': 'binance_processor',
     'auto.offset.reset': 'earliest'
 }
@@ -23,7 +30,7 @@ consumer.subscribe(['binance_data'])
 
 # Kafka Producer setup (for processed data)
 producer_conf = {
-    'bootstrap.servers': 'localhost:9092'
+    'bootstrap.servers': getenv("KAFKA_BOOSTRAP_SERVERS")
 }
 producer = Producer(producer_conf)
 
@@ -109,7 +116,7 @@ def process_message(msg):
             'taker_buy_quote_asset_volume': taker_buy_quote_asset_volume,
             'ignore': ignore
         }
-        producer.produce('h', json.dumps(processed_data), callback=delivery_report)
+        producer.produce('processed_data', json.dumps(processed_data), callback=delivery_report)
         data_queue.append(processed_data)
         if len(data_queue) == 20:
             batch_data = list(data_queue)
