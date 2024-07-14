@@ -9,7 +9,7 @@ data_queue = deque(maxlen=20)
 
 
 # InfluxDB setup
-influx_client = InfluxDBClient(url="http://localhost:8086", token="V26TNAwISDUep2klYYrvJofBx8fr8E3vJlxEsMjsbQUDalwf6KykcPv4jSX7IbSY8d1bFrt3PUMmtGIKGDXn9w==", org="myorg")
+influx_client = InfluxDBClient(url="http://localhost:8086", username="myuser",password="mypassword",ssl=True, verify_ssl=True, org="myorg")
 write_api = influx_client.write_api(write_options=SYNCHRONOUS)
 
 # Kafka Consumer setup
@@ -80,7 +80,7 @@ def process_message(msg):
             .field("taker_buy_base_asset_volume", taker_buy_base_asset_volume) \
             .field("taker_buy_quote_asset_volume", taker_buy_quote_asset_volume) \
             .field("ignore", ignore) \
-            .time(event_time)
+            .time(event_time, "ms")
         try:
             write_api.write(bucket="mybucket", record=point)
             write_api.flush()
