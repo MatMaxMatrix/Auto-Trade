@@ -2,9 +2,9 @@
 *.pytest*
 *.pyc
 *.ipynb
-
+*.env*
 *egg*
 *log*
 .local
-test/.*
-test/
+#test/.*
+#test/
