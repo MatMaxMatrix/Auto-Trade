@@ -42,6 +42,7 @@ def delivery_report(err, msg):
         print(f'Message delivered to {msg.topic()} [{msg.partition()}]')
 
 def process_message(msg):
+    
     try:
         data = json.loads(msg.value())
         
