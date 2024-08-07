@@ -57,6 +57,8 @@ df = fetch_data_from_influx("mybucket", "binance_data", "-2m", "now()")
 #%%
 logging.info(f"Data shape after fetching: {df.shape}")
 #%%
+print(len(df))
+#%%
 prepared_data = prepare_data_for_model(df, context_length=50, prediction_length=10)
 #%%
 logging.info(f"Final prepared data length: {len(prepared_data)}")
