@@ -1,3 +1,4 @@
+#%%
 import json
 from confluent_kafka import Consumer, Producer, KafkaError
 from influxdb_client import InfluxDBClient, Point
@@ -95,6 +96,7 @@ def process_message(msg):
             print(f"Error writing to InfluxDB: {e}")
 
         # Process and produce to another Kafka topic for the LLM model
+        """
         processed_data = {
             'event_type': event_type,
             'event_time': event_time,
@@ -125,7 +127,7 @@ def process_message(msg):
                 json.dump(batch_data, f)
             subprocess.run(['python3', 'git_push.py'])
             data_queue.clear()
-
+        """
     except json.JSONDecodeError as e:
         print(f"Error decoding JSON: {e}")
     except KeyError as e:
@@ -134,22 +136,27 @@ def process_message(msg):
         print(f"Unexpected error processing message: {e}")
 
 # Main loop
-try:
-    while True:
-        msg = consumer.poll(5.0)
-        if msg is None:
-            continue
-        if msg.error():
-            if msg.error().code() == KafkaError._PARTITION_EOF:
+def main():
+    try:
+        while True:
+            msg = consumer.poll(5.0)
+            if msg is None:
                 continue
-            else:
-                print(f"Error: {msg.error()}")
-                break
-        process_message(msg)
-except KeyboardInterrupt:
-    print("Shutting down...")
-finally:
-    producer.flush()  # Make sure all messages are sent
-    consumer.close()
-    influx_client.close()
-    print("Shutdown complete.")
+            if msg.error():
+                if msg.error().code() == KafkaError._PARTITION_EOF:
+                    continue
+                else:
+                    print(f"Error: {msg.error()}")
+                    break
+            process_message(msg)
+    except KeyboardInterrupt:
+        print("Shutting down...")
+    finally:
+        producer.flush()  # Make sure all messages are sent
+        consumer.close()
+        influx_client.close()
+        print("Shutdown complete.")
+
+if __name__ == "__main__":
+    main()
+# %%
