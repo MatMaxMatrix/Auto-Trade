@@ -1,0 +1,18 @@
+2024-08-09 19:21:03,370 - INFO - info
+2024-08-09 19:21:03,370 - WARNING - warning
+2024-08-09 19:21:03,370 - ERROR - error
+2024-08-09 19:21:03,370 - CRITICAL - critical
+2024-08-09 19:21:03,370 - INFO - x is 2
+2024-08-09 19:21:03,370 - ERROR - Error
+Traceback (most recent call last):
+  File "/Users/mobin.azimipanah/Desktop/Trade/test/basic-logging.py", line 19, in <module>
+    1/0
+    ~^~
+ZeroDivisionError: division by zero
+2024-08-09 19:21:03,372 - ERROR - second-example-ERROR
+Traceback (most recent call last):
+  File "/Users/mobin.azimipanah/Desktop/Trade/test/basic-logging.py", line 28, in <module>
+    1/0
+    ~^~
+ZeroDivisionError: division by zero
+2024-08-09 19:21:03,373 - INFO - test
