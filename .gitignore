@@ -4,7 +4,7 @@
 *.ipynb
 *.env*
 *egg*
-*log*
+#*log*
 .local
 #test/.*
 #test/
