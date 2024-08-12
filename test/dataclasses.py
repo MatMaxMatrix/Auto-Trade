@@ -1,5 +1,6 @@
 #%%
 from dataclasses import dataclass, field
+
 @dataclass
 class InventoryItem:
     '''class for keeping track of an item in inventory'''
