@@ -161,7 +161,6 @@ if __name__ == "__main__":
         embedding_dim=64,  # This should match the output of input_proj
         slstm_at=[0, 1, 2, 3, 4],  # Use sLSTM in all blocks
     )
-
     # Create and train model
     model = StockPredictionModel(cfg)
     train_model(model, train_loader, val_loader, num_epochs=50)
