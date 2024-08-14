@@ -9,7 +9,7 @@ from dotenv import load_dotenv
 from os import getenv
 import logging
 #%%
-class DataPreparation:
+class DataPreparation: #first function will query the data from InfluxDB, the second functoin will prepare the data in several batches based on the context length.
     def __init__(self):
         logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
         load_dotenv()
@@ -98,7 +98,7 @@ class StockDataset(torch.utils.data.Dataset):
 
 def train_model(model, train_loader, val_loader, num_epochs):
     criterion = nn.MSELoss()
-    optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
+    optimizer = torch.optim.Adam(model.parameters(), lr=0.1)
 
     for epoch in range(num_epochs):
         model.train()
@@ -130,19 +130,21 @@ if __name__ == "__main__":
     prepared_data = data_prep.run_data_preparation(
         bucket="mybucket",
         measurement="binance_data",
-        start_time="-2m",
+        start_time="-6m",
         end_time="now()",
-        context_length=50,
-        prediction_length=10
+        context_length=100,
+        prediction_length=20
     )
 
     # Create dataset and data loaders
     dataset = StockDataset(prepared_data)
+    print(len(dataset)) #is the length of the all received data - context_length - prediction_length + 1
+    print(len(dataset[0])) #is the length of the first data point which is 3, past_values, past_time_features, future_values = 50, 50, 10
     train_size = int(0.8 * len(dataset))
     val_size = len(dataset) - train_size
     train_dataset, val_dataset = torch.utils.data.random_split(dataset, [train_size, val_size])
-    train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=32, shuffle=True)
-    val_loader = torch.utils.data.DataLoader(val_dataset, batch_size=32)
+    train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=1, shuffle=True)
+    val_loader = torch.utils.data.DataLoader(val_dataset, batch_size=1)
 
     # Configuration
     cfg = xLSTMBlockStackConfig(
@@ -154,10 +156,10 @@ if __name__ == "__main__":
                 bias_init="powerlaw_blockdependent",
             ),
         ),
-        context_length=50,  # Match your context_length
-        num_blocks=3,
+        context_length=100,  # Match your context_length
+        num_blocks=5,
         embedding_dim=64,  # This should match the output of input_proj
-        slstm_at=[0, 1, 2],  # Use sLSTM in all blocks
+        slstm_at=[0, 1, 2, 3, 4],  # Use sLSTM in all blocks
     )
 
     # Create and train model
