@@ -98,6 +98,9 @@ class StockDataset(torch.utils.data.Dataset):
 
 def train_model(model, train_loader, val_loader, num_epochs):
     criterion = nn.MSELoss()
+    trainable_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
+    print(f"Number of trainable parameters: {trainable_params}")
+
     optimizer = torch.optim.Adam(model.parameters(), lr=0.1)
 
     for epoch in range(num_epochs):
@@ -130,10 +133,10 @@ if __name__ == "__main__":
     prepared_data = data_prep.run_data_preparation(
         bucket="mybucket",
         measurement="binance_data",
-        start_time="-6m",
+        start_time="-30m",
         end_time="now()",
-        context_length=100,
-        prediction_length=20
+        context_length=1000,
+        prediction_length=10
     )
 
     # Create dataset and data loaders
@@ -151,15 +154,15 @@ if __name__ == "__main__":
         slstm_block=sLSTMBlockConfig(
             slstm=sLSTMLayerConfig(
                 backend="vanilla",  # Use 'vanilla' for CPU
-                num_heads=4,
-                conv1d_kernel_size=4,
+                num_heads=50,
+                conv1d_kernel_size=8,
                 bias_init="powerlaw_blockdependent",
             ),
         ),
-        context_length=100,  # Match your context_length
-        num_blocks=5,
-        embedding_dim=64,  # This should match the output of input_proj
-        slstm_at=[0, 1, 2, 3, 4],  # Use sLSTM in all blocks
+        context_length=50,  # Match your context_length
+        num_blocks=500,
+        embedding_dim=100,  # This should match the output of input_proj
+        slstm_at=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20],  # Use sLSTM in all blocks
     )
     # Create and train model
     model = StockPredictionModel(cfg)
