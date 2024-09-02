@@ -6,16 +6,16 @@ import matplotlib.pyplot as plt
 from download_binance_data import get_binance_bitcoin_data
 
 #%%
-def get_bitcoin_minute_data(days=70, output_csv = None):
+def get_bitcoin_seconds_data(days=70, output_csv = None):
     today_datetime = datetime.today()
     start_datetime = datetime.today() - timedelta(days=days)
-    df_monthly = get_binance_bitcoin_data("1m", "monthly", start_datetime, today_datetime)
+    df_monthly = get_binance_bitcoin_data("1s", "monthly", start_datetime, today_datetime)
 
     # Add days from the current month if needed
     highest_timestamp_seconds = df_monthly['time'].max() / 1000
 
     start_day = datetime.fromtimestamp(highest_timestamp_seconds)
-    df_daily = get_binance_bitcoin_data("1m", "daily", start_day, today_datetime)
+    df_daily = get_binance_bitcoin_data("1s", "daily", start_day, today_datetime)
 
     df = pd.concat([df_monthly, df_daily])
 
@@ -33,7 +33,7 @@ def get_bitcoin_minute_data(days=70, output_csv = None):
 def plot_bitcoin_price(df):
     plt.figure(figsize=(12, 6))
     plt.plot(df.index, df['close'], label='Close Price')
-    plt.title(f'Bitcoin Minute Closing Price (Last {len(df) / 60 / 24} Days)')
+    plt.title(f'Bitcoin Seconds Closing Price (Last {len(df) / 60 / 60 / 24} Days)')
     plt.xlabel('Date')
     plt.ylabel('Price (USD)')
     plt.grid(True)
@@ -43,11 +43,11 @@ def plot_bitcoin_price(df):
     plt.show()
 
 # Test the function
-output_file_path = "bitcoin_minute_data.csv"
+output_file_path = "bitcoin_seconds_data.csv"
 
-bitcoin_data = get_bitcoin_minute_data(days=70, output_csv=output_file_path)
+bitcoin_data = get_bitcoin_seconds_data(days=70, output_csv=output_file_path)
 if bitcoin_data is not None and not bitcoin_data.empty:
-    print("Latest Bitcoin Minute Data:")
+    print("Latest Bitcoin Seconds Data:")
     print(bitcoin_data.head())
     print(bitcoin_data.tail())
     plot_bitcoin_price(bitcoin_data)
@@ -57,7 +57,7 @@ else:
 # %%
 #experiment
 import pandas as pd
-csv_file_path = "bitcoin_minute_data.csv"
+csv_file_path = "bitcoin_seconds_data.csv"
 bitcoin_close_data = pd.read_csv(csv_file_path, usecols=['close'])
 print(bitcoin_close_data.head())
 
