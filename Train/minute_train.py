@@ -1,4 +1,3 @@
-#%%
 import torch
 from torch import nn
 from xlstm import (
@@ -14,76 +13,40 @@ import pandas as pd
 import numpy as np
 import logging
 from torch.utils.checkpoint import checkpoint
+from sklearn.preprocessing import MinMaxScaler
 
-torch.cuda.empty_cache()
-
-# Check if CUDA (GPU support) is available
-if torch.cuda.is_available():
-    # Get the number of GPUs available
-    num_gpus = torch.cuda.device_count()
-    print(f"Number of GPUs available: {num_gpus}\n")
-
-    for i in range(num_gpus):
-        print(f"GPU {i}:")
-        print(f"  Name: {torch.cuda.get_device_name(i)}")
-        print(f"  Compute Capability: {torch.cuda.get_device_capability(i)}")
-        print(f"  Memory Allocated: {torch.cuda.memory_allocated(i) / 1024**2:.2f} MB")
-        print(f"  Memory Cached: {torch.cuda.memory_reserved(i) / 1024**2:.2f} MB")
-        print()
-
-else:
-    print("CUDA is not available. No GPU found.")
-
-# Print the total memory allocated by tensors in MB
-allocated_memory = torch.cuda.memory_allocated()
-print(f"Allocated memory: {allocated_memory / 1024**2:.2f} MB")
-
-# Print the memory cached by the allocator in MB
-cached_memory = torch.cuda.memory_reserved()
-print(f"Cached memory: {cached_memory / 1024**2:.2f} MB")
-
-# Get free and total memory on the GPU
-free_memory = torch.cuda.memory_reserved() - torch.cuda.memory_allocated()
-total_memory = torch.cuda.get_device_properties(0).total_memory
-
-# Print out memory information
-print(f"Free memory: {free_memory / 1024**2:.2f} MB")
-print(f"Total memory: {total_memory / 1024**2:.2f} MB")
-
-
+# ... (keep the existing imports and GPU checks)
 
 class DataPreparation:
-    def prepare_data_for_model(self, df, context_length, prediction_length):
-        """
-        Prepare data for model training.
+    def __init__(self):
+        self.price_scaler = MinMaxScaler(feature_range=(-1, 1))
 
-        :param df: DataFrame with Bitcoin price data
-        :param context_length: Number of past data points to use for prediction
-        :param prediction_length: Number of future data points to predict
-        :return: List of prepared data points
-        """
+    def prepare_data_for_model(self, df, context_length, prediction_length):
         logging.info(f"Preparing data for model: context_length={context_length}, prediction_length={prediction_length}")
+
+        # Scale the 'close' prices
+        df['scaled_close'] = self.price_scaler.fit_transform(df['close'].values.reshape(-1, 1))
 
         data = []
         for i in range(len(df) - context_length - prediction_length + 1):
-            past_values = df['close'].iloc[i:i+context_length].values
+            past_values = df['scaled_close'].iloc[i:i+context_length].values
 
-            # Extract and encode minute and hour as cyclical features
             past_time_features = df.index[i:i+context_length]
-            past_minute = past_time_features.minute.values # [0, 1, ..., 59]
-            past_hour = past_time_features.hour.values # [0, 1, ..., 23]
+            past_minute = past_time_features.minute.values
+            past_hour = past_time_features.hour.values
+            past_day = past_time_features.dayofweek.values
 
-            past_minute_sin = np.sin(2 * np.pi * past_minute / 60)  #[0, 1, ..., 59] / 60 = [0, ..., 1] Or [0, 2pi]
-            past_minute_cos = np.cos(2 * np.pi * past_minute / 60) #[0, 1, ..., 59] / 60 = [0, ..., 1] Or [0, 2pi]
-            past_hour_sin = np.sin(2 * np.pi * past_hour / 24) # [0, 1, ..., 23] / 24 = [0, ..., 1] Or [0, 2pi]
-            past_hour_cos = np.cos(2 * np.pi * past_hour / 24) # [0, 1, ..., 23] / 24 = [0, ..., 1] Or [0, 2pi]
+            past_minute_sin = np.sin(2 * np.pi * past_minute / 60)
+            past_minute_cos = np.cos(2 * np.pi * past_minute / 60)
+            past_hour_sin = np.sin(2 * np.pi * past_hour / 24)
+            past_hour_cos = np.cos(2 * np.pi * past_hour / 24)
+            past_day_sin = np.sin(2 * np.pi * past_day / 7)
+            past_day_cos = np.cos(2 * np.pi * past_day / 7)
 
-            future_values = df['close'].iloc[i+context_length:i+context_length+prediction_length].values
+            future_values = df['scaled_close'].iloc[i+context_length:i+context_length+prediction_length].values
 
-            # Combine the derived cyclical features
-            time_features_combined = np.stack((past_minute_sin, past_minute_cos, past_hour_sin, past_hour_cos), axis=-1)
-            if i < 2:
-                logging.info(f"Time Features Combined: {time_features_combined}")
+            time_features_combined = np.stack((past_minute_sin, past_minute_cos, past_hour_sin, past_hour_cos, past_day_sin, past_day_cos), axis=-1)
+            
             data.append({
                 'past_values': past_values,
                 'past_time_features': time_features_combined,
@@ -93,19 +56,9 @@ class DataPreparation:
         logging.info(f"Prepared {len(data)} data points")
         return data
 
-class StockPredictionModel(nn.Module):
-    def __init__(self, config):
-        super().__init__()
-        self.input_proj = nn.Linear(5, config.embedding_dim)  # Adjusted to 5 input features (price, sin(min), cos(min), sin(hour), cos(hour))
-        self.xlstm = xLSTMBlockStack(config)
-        self.fc = nn.Linear(config.embedding_dim, 1)
-
-    def forward(self, x, time_features):
-        x = torch.cat([x.unsqueeze(-1), time_features], dim=-1)  # time_features already contains four dimensions
-        x = self.input_proj(x)
-        x = checkpoint(self.xlstm, x)
-        return self.fc(x[:, -1, :])
-
+    def inverse_transform(self, scaled_values):
+        return self.price_scaler.inverse_transform(scaled_values.reshape(-1, 1)).flatten()
+    
 class StockDataset(torch.utils.data.Dataset):
     def __init__(self, data):
         self.data = data
@@ -120,26 +73,36 @@ class StockDataset(torch.utils.data.Dataset):
             torch.FloatTensor(item['past_time_features']),
             torch.FloatTensor(item['future_values'])
         )
-def save_model(model, path):
-    torch.save(model.state_dict(), path)
-    logging.info(f"Model saved to {path}")
+
+class StockPredictionModel(nn.Module):
+    def __init__(self, config):
+        super().__init__()
+        self.input_proj = nn.Linear(7, config.embedding_dim)  # Adjusted to 7 input features
+        self.xlstm = xLSTMBlockStack(config)
+        self.fc = nn.Linear(config.embedding_dim, 1)
+        self.dropout = nn.Dropout(0.2)
+
+    def forward(self, x, time_features):
+        x = torch.cat([x.unsqueeze(-1), time_features], dim=-1)
+        x = self.input_proj(x)
+        x = self.dropout(x)
+        x = checkpoint(self.xlstm, x)
+        x = self.dropout(x)
+        return self.fc(x[:, -1, :])
+
+# ... (keep the existing StockDataset class)
 
 def train_model(model, train_loader, val_loader, num_epochs, device, save_path):
-    """
-    Train the model.
-
-    :param model: The model to train
-    :param train_loader: DataLoader for training data
-    :param val_loader: DataLoader for validation data
-    :param num_epochs: Number of epochs to train
-    :param device: Device to use for training (CPU or GPU)
-    """
     criterion = nn.MSELoss()
-    optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
-    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', patience=5, factor=0.5)
+    optimizer = torch.optim.AdamW(model.parameters(), lr=0.001, weight_decay=1e-5)
+    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', patience=5, factor=0.5, verbose=True)
 
     model.to(device)
     criterion.to(device)
+
+    best_val_loss = float('inf')
+    patience = 10
+    patience_counter = 0
 
     for epoch in range(num_epochs):
         logging.info(f"Starting epoch {epoch+1}")
@@ -171,7 +134,17 @@ def train_model(model, train_loader, val_loader, num_epochs, device, save_path):
         scheduler.step(val_loss)
 
         logging.info(f"Epoch {epoch+1}, Train Loss: {train_loss:.4f}, Validation Loss: {val_loss:.4f}")
-    save_model(model, save_path)
+
+        if val_loss < best_val_loss:
+            best_val_loss = val_loss
+            patience_counter = 0
+            save_model(model, save_path)
+        else:
+            patience_counter += 1
+            if patience_counter >= patience:
+                logging.info(f"Early stopping triggered after {epoch+1} epochs")
+                break
+
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
@@ -192,54 +165,43 @@ if __name__ == "__main__":
     train_size = int(0.8 * len(dataset))
     val_size = len(dataset) - train_size
     train_dataset, val_dataset = torch.utils.data.random_split(dataset, [train_size, val_size])
-    train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=16, shuffle=True, pin_memory=False, num_workers=16)
-    val_loader = torch.utils.data.DataLoader(val_dataset, batch_size=16, pin_memory=False, num_workers=16)
-
-    # Verify DataLoader
-    logging.info("Verifying DataLoader...")
-    for batch_idx, (past_values, past_time_features, future_values) in enumerate(train_loader):
-        if batch_idx >= 2:
-            break
-        logging.info(f"Batch {batch_idx}: past_values shape: {past_values.shape}, past_time_features shape: {past_time_features.shape}, future_values shape: {future_values.shape}")
+    train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=8, shuffle=True, pin_memory=True, num_workers=4)
+    val_loader = torch.utils.data.DataLoader(val_dataset, batch_size=8, pin_memory=True, num_workers=4)
 
     # Configuration
     cfg = xLSTMBlockStackConfig(
         mlstm_block=mLSTMBlockConfig(
             mlstm=mLSTMLayerConfig(
-                conv1d_kernel_size=4, qkv_proj_blocksize=4, num_heads=4
+                conv1d_kernel_size=4, qkv_proj_blocksize=4, num_heads=8
             )
         ),
         slstm_block=sLSTMBlockConfig(
             slstm=sLSTMLayerConfig(
                 backend="cuda",
-                num_heads=4,
+                num_heads=8,
                 conv1d_kernel_size=4,
                 bias_init="powerlaw_blockdependent",
             ),
-            feedforward=FeedForwardConfig(proj_factor=1.3, act_fn="gelu"),
+            feedforward=FeedForwardConfig(proj_factor=1.5, act_fn="gelu"),
         ),
         context_length=1440,
-        num_blocks=7,
-        embedding_dim=128,
-        slstm_at=[1],
-
+        num_blocks=8,
+        embedding_dim=256,
+        slstm_at=[1, 3, 5, 7],
     )
 
-    # Check if GPU is available and set the device
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     logging.info(f"Using device: {device}")
 
-    # Create and train model
     model = StockPredictionModel(cfg)
 
     def count_parameters(model):
         return sum(p.numel() for p in model.parameters() if p.requires_grad)
 
-    # Count and print the number of trainable parameters
     num_params = count_parameters(model)
     print(f"Total number of trainable parameters: {num_params}")
 
-    train_model(model, train_loader, val_loader, num_epochs=50, device=device, save_path="trained_stock_prediction_model.pth")
+    train_model(model, train_loader, val_loader, num_epochs=20, device=device, save_path="trained_stock_prediction_model.pth")
 
     # Make predictions
     model.eval()
@@ -248,5 +210,10 @@ if __name__ == "__main__":
         past_values, past_time_features, future_values = sample
         past_values, past_time_features, future_values = past_values.to(device), past_time_features.to(device), future_values.to(device)
         prediction = model(past_values, past_time_features)
-        logging.info(f"Predicted next price: {prediction[0].item()}")
-        logging.info(f"Actual next price: {future_values[0, 0].item()}")
+        
+        # Inverse transform the scaled predictions and actual values
+        prediction_original = data_prep.inverse_transform(prediction.cpu().numpy())
+        future_values_original = data_prep.inverse_transform(future_values[:, 0].cpu().numpy())
+        
+        logging.info(f"Predicted next price: {prediction_original[0]:.2f}")
+        logging.info(f"Actual next price: {future_values_original[0]:.2f}")
