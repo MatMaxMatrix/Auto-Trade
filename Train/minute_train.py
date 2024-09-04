@@ -50,6 +50,8 @@ total_memory = torch.cuda.get_device_properties(0).total_memory
 print(f"Free memory: {free_memory / 1024**2:.2f} MB")
 print(f"Total memory: {total_memory / 1024**2:.2f} MB")
 
+
+
 class DataPreparation:
     def prepare_data_for_model(self, df, context_length, prediction_length):
         """
@@ -118,8 +120,11 @@ class StockDataset(torch.utils.data.Dataset):
             torch.FloatTensor(item['past_time_features']),
             torch.FloatTensor(item['future_values'])
         )
+def save_model(model, path):
+    torch.save(model.state_dict(), path)
+    logging.info(f"Model saved to {path}")
 
-def train_model(model, train_loader, val_loader, num_epochs, device):
+def train_model(model, train_loader, val_loader, num_epochs, device, save_path):
     """
     Train the model.
 
@@ -166,7 +171,7 @@ def train_model(model, train_loader, val_loader, num_epochs, device):
         scheduler.step(val_loss)
 
         logging.info(f"Epoch {epoch+1}, Train Loss: {train_loss:.4f}, Validation Loss: {val_loss:.4f}")
-
+    save_model(model, save_path)
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
@@ -187,8 +192,8 @@ if __name__ == "__main__":
     train_size = int(0.8 * len(dataset))
     val_size = len(dataset) - train_size
     train_dataset, val_dataset = torch.utils.data.random_split(dataset, [train_size, val_size])
-    train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=32, shuffle=True, pin_memory=False, num_workers=4)
-    val_loader = torch.utils.data.DataLoader(val_dataset, batch_size=32, pin_memory=False, num_workers=4)
+    train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=16, shuffle=True, pin_memory=False, num_workers=16)
+    val_loader = torch.utils.data.DataLoader(val_dataset, batch_size=16, pin_memory=False, num_workers=16)
 
     # Verify DataLoader
     logging.info("Verifying DataLoader...")
@@ -214,8 +219,8 @@ if __name__ == "__main__":
             feedforward=FeedForwardConfig(proj_factor=1.3, act_fn="gelu"),
         ),
         context_length=1440,
-        num_blocks=4,
-        embedding_dim=32,
+        num_blocks=7,
+        embedding_dim=128,
         slstm_at=[1],
 
     )
@@ -234,7 +239,7 @@ if __name__ == "__main__":
     num_params = count_parameters(model)
     print(f"Total number of trainable parameters: {num_params}")
 
-    train_model(model, train_loader, val_loader, num_epochs=50, device=device)
+    train_model(model, train_loader, val_loader, num_epochs=50, device=device, save_path="trained_stock_prediction_model.pth")
 
     # Make predictions
     model.eval()
