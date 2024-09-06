@@ -45,7 +45,7 @@ def plot_bitcoin_price(df):
 # Test the function
 output_file_path = "bitcoin_minute_data.csv"
 
-bitcoin_data = get_bitcoin_minute_data(days=70, output_csv=output_file_path)
+bitcoin_data = get_bitcoin_minute_data(days=365, output_csv=output_file_path)
 if bitcoin_data is not None and not bitcoin_data.empty:
     print("Latest Bitcoin Minute Data:")
     print(bitcoin_data.head())
