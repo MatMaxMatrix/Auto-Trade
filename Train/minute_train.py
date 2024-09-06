@@ -92,6 +92,11 @@ class StockPredictionModel(nn.Module):
 
 # ... (keep the existing StockDataset class)
 
+def save_model(model, save_path):
+    torch.save(model.state_dict(), save_path)
+    logging.info(f"Model saved to {save_path}")
+
+
 def train_model(model, train_loader, val_loader, num_epochs, device, save_path):
     criterion = nn.MSELoss()
     optimizer = torch.optim.AdamW(model.parameters(), lr=0.001, weight_decay=1e-5)
