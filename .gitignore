@@ -8,3 +8,5 @@
 .local
 #test/.*
 #test/
+poetry.lock
+pyproject.toml
