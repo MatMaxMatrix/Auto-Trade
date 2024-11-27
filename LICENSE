@@ -1,4 +1,4 @@
-# SOFTWARE LICENSE AGREEMENT
+# SOFTWARE LICENSE AGREEMENT FOR BITCOIN PRICE PREDICTION SOFTWARE
 
 Copyright (c) 2024 Mobin Azimipanah
 
@@ -8,21 +8,24 @@ Permission is hereby granted to any person obtaining a copy of this software and
 ### 1.1 Personal and Non-Commercial Use
 - Personal use and academic research are permitted
 - Commercial use requires explicit written permission from the copyright holder
+- Educational institutions may use the Software for teaching purposes with prior written consent
 
 ### 1.2 Modification and Distribution
 - Modifications are allowed for personal use only
-- Redistribution is prohibited without express written consent
+- Redistribution is strictly prohibited without express written consent
+- All derivative works must maintain these license terms
 
 ## 2. DISCLAIMERS AND LIMITATIONS
 
 ### 2.1 No Financial Guarantee
-THE SOFTWARE IS PROVIDED "AS IS" WITHOUT ANY REPRESENTATION OR WARRANTY OF FINANCIAL PERFORMANCE OR PREDICTIVE ACCURACY. 
+THE SOFTWARE IS PROVIDED "AS IS" WITHOUT ANY REPRESENTATION OR WARRANTY OF FINANCIAL PERFORMANCE OR PREDICTIVE ACCURACY.
 
 ### 2.2 Liability Exclusion
 IN NO EVENT SHALL THE COPYRIGHT HOLDER BE LIABLE FOR:
-- ANY FINANCIAL LOSSES INCURRED THROUGH USE OF THIS SOFTWARE
-- TRADING DECISIONS MADE BASED ON THE SOFTWARE'S PREDICTIONS
-- DIRECT, INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES
+- Any financial losses incurred through use of this Software
+- Trading decisions made based on the Software's predictions
+- Direct, indirect, incidental, special, consequential, or punitive damages
+- System failures, data loss, or technical malfunctions
 
 ### 2.3 User Responsibility
 THE USER EXPLICITLY ACKNOWLEDGES AND AGREES THAT:
@@ -31,12 +34,28 @@ THE USER EXPLICITLY ACKNOWLEDGES AND AGREES THAT:
 - All trading decisions are solely the responsibility of the user
 - No financial compensation will be provided for losses
 
+### 2.4 Risk Acknowledgment
+Users explicitly acknowledge that:
+- Past performance does not guarantee future results
+- Cryptocurrency markets are highly volatile
+- Models may fail during extreme market conditions
+- Technical issues may affect prediction accuracy
+- Regulatory changes may impact the Software's usability
+
+### 2.5 Model Limitations
+Users acknowledge that:
+- The machine learning models are probabilistic in nature
+- Training data limitations may affect predictions
+- Market conditions may render models temporarily ineffective
+- Regular retraining may be required for optimal performance
+
 ## 3. INTELLECTUAL PROPERTY
 
 ### 3.1 Copyright Preservation
 - Full copyright is retained by Mobin Azimipanah
 - Unauthorized commercial use is strictly prohibited
 - Any commercial adaptation requires formal licensing agreement
+- All intellectual property rights in the Software remain with the copyright holder
 
 ## 4. USAGE RESTRICTIONS
 
@@ -45,17 +64,60 @@ The Software MUST NOT BE:
 - Used for high-stakes financial trading without professional oversight
 - Employed in regulated financial environments without explicit approval
 - Distributed to third parties without written consent
+- Used in any way that violates applicable laws or regulations
 
-## 5. CONTACT FOR PERMISSIONS
+## 5. REGULATORY COMPLIANCE
+
+### 5.1 European Union Regulations
+This Software is subject to:
+- MiCA (Markets in Crypto-Assets) Regulation
+- GDPR (General Data Protection Regulation)
+- Any applicable financial services regulations
+Users must ensure compliance with all relevant EU regulations when using this Software.
+
+### 5.2 International Compliance
+Users must comply with:
+- Local cryptocurrency trading regulations
+- Financial services laws in their jurisdiction
+- Anti-money laundering (AML) requirements
+- Know Your Customer (KYC) regulations where applicable
+
+## 6. DATA PROTECTION AND PRIVACY
+
+### 6.1 Data Processing
+- All data processing complies with GDPR requirements
+- User data will be processed only as necessary for the Software's operation
+- No personal data will be shared with third parties without explicit consent
+- Users have the right to request their data be deleted
+
+## 7. TERMINATION
+
+### 7.1 Termination Rights
+The copyright holder reserves the right to terminate this license:
+- Upon violation of any terms
+- If required by regulatory authorities
+- For security concerns
+- With 30 days notice for any other reason
+
+### 7.2 Effect of Termination
+Upon termination:
+- All rights granted under this license cease immediately
+- User must cease all use of the Software
+- User must destroy all copies of the Software
+- Confidentiality obligations survive termination
+
+## 8. CONTACT FOR PERMISSIONS
 For commercial use, modifications, or licensing inquiries, contact:
 Email: azimipanah.mobin@gmail.com
 
-## 6. ACCEPTANCE OF TERMS
-USING THIS SOFTWARE INDICATES FULL ACCEPTANCE OF ALL TERMS OUTLINED HEREIN.
+## 9. GOVERNING LAW
+This agreement shall be governed by and construed in accordance with the laws of the European Union and the jurisdiction of the copyright holder, without regard to conflicts of law principles.
 
-### GOVERNING LAW
-This agreement shall be governed by the laws of the jurisdiction of the copyright holder.
+## 10. ACCEPTANCE OF TERMS
+USING THIS SOFTWARE INDICATES FULL ACCEPTANCE OF ALL TERMS OUTLINED HEREIN.
 
 ---
 
 BY USING THIS SOFTWARE, YOU ACKNOWLEDGE THAT YOU HAVE READ, UNDERSTOOD, AND AGREE TO BE BOUND BY THESE TERMS.
+
+Last Updated: November 27, 2024
