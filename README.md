@@ -147,7 +147,7 @@ The project implements sophisticated neural network architectures:
 This is a research and learning project. Use caution and never risk more than you can afford to lose when dealing with cryptocurrency trading.
 
 ## License
-This project is licensed under the terms outlined in the [LICENSE](../LICENSE) file. Please review it for more details.
+This project is licensed under the terms outlined in the [LICENSE](/LICENSE) file. Please review it for more details.
 
 ## Contact
 For queries or suggestions, please contact: azimipanah.mobin@gmail.com
